@@ -1,7 +1,7 @@
 package wsserver
 
 type Message struct {
-	From string
+	From    string
 	Destiny string
-	Data string
+	Data    string
 }

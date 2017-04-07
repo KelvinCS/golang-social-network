@@ -4,7 +4,7 @@ import "sync"
 
 type storage struct {
 	clients map[string]*Client
-	mutex sync.Mutex
+	mutex   sync.Mutex
 }
 
 func newStorage() *storage {
@@ -13,7 +13,7 @@ func newStorage() *storage {
 	}
 }
 
-func(s *storage) Register(client *Client, key string) {
+func (s *storage) Register(key string, client *Client) {
 	s.mutex.Lock()
 	s.clients[key] = client
 	s.mutex.Unlock()
