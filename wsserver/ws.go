@@ -27,14 +27,17 @@ func New() *ws {
 	}
 }
 
-func (w *ws) EchoHandler(c echo.Context) {
+func (w *ws) EchoHandler(c echo.Context) error {
 	socket, err := w.upgrader.Upgrade(c.Response(), c.Request(), nil)
 
 	if err != nil {
 		log.Println(err)
 	}
 
-	client := newClient("Kelvin", socket)
+	id := c.FormValue("id")
+	client := newClient(id, socket)
 
-	w.storage.Register("Kelvin", client)
+	w.storage.Register(id, client)
+
+	return err
 }
