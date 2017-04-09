@@ -1,6 +1,7 @@
 package wsserver
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/gorilla/websocket"
@@ -12,13 +13,13 @@ const (
 	WriteBufferSize = 512
 )
 
-type ws struct {
+type WS struct {
 	storage  *storage
 	upgrader websocket.Upgrader
 }
 
-func New() *ws {
-	return &ws{
+func New() *WS {
+	return &WS{
 		storage: newStorage(),
 		upgrader: websocket.Upgrader{
 			ReadBufferSize:  ReadBufferSize,
@@ -27,15 +28,20 @@ func New() *ws {
 	}
 }
 
-func (w *ws) EchoHandler(c echo.Context) error {
+func (w *WS) EchoHandler(c echo.Context) error {
 	socket, err := w.upgrader.Upgrade(c.Response(), c.Request(), nil)
 
 	if err != nil {
 		log.Println(err)
+		return err
 	}
 
-	id := c.FormValue("id")
-	client := newClient(id, socket)
+	fmt.Println("Cliente conectado")
+	fmt.Println(c.Request().Method)
+
+	id := c.Param("id")
+	fmt.Println(id)
+	client := newClient(id, socket, w.storage)
 
 	w.storage.Register(id, client)
 
