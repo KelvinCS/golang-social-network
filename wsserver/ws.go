@@ -13,13 +13,13 @@ const (
 )
 
 type WS struct {
-	storage  *storage
+	clients  *storage
 	upgrader websocket.Upgrader
 }
 
 func New() *WS {
 	return &WS{
-		storage: newStorage(),
+		clients: newStorage(),
 		upgrader: websocket.Upgrader{
 			ReadBufferSize:  ReadBufferSize,
 			WriteBufferSize: WriteBufferSize,
@@ -36,10 +36,13 @@ func (w *WS) EchoHandler(c echo.Context) error {
 	}
 
 	id := c.Param("id")
-	client := newClient(id, socket, w.storage)
+	client := newClient(id, socket, w.clients)
 
 	client.Run()
-	w.storage.Register(id, client)
+	w.clients.Register(id, client)
 
 	return err
 }
+
+//Função que recebe um callback a ser executado quando se tenta enviar
+//mensagens para um socket fechado

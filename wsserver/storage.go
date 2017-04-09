@@ -2,18 +2,20 @@ package wsserver
 
 import (
 	"fmt"
-	"log"
+
 	"sync"
 )
 
 type storage struct {
-	clients map[string]*Client
-	mutex   sync.Mutex
+	pendingMessages map[string]chan *Message
+	clients         map[string]*Client
+	mutex           sync.Mutex
 }
 
 func newStorage() *storage {
 	return &storage{
-		clients: make(map[string]*Client),
+		pendingMessages: make(map[string]chan *Message),
+		clients:         make(map[string]*Client),
 	}
 }
 
@@ -30,15 +32,42 @@ func (s *storage) SendToClient(message *Message, clientId string) error {
 
 	s.mutex.Lock()
 	if client, ok := s.clients[clientId]; ok {
-		client.Send <- message
+		fmt.Println("1")
+		if client.online {
+			select {
+
+			case client.Send <- message:
+
+			default:
+				s.SaveMessage(message)
+				delete(s.clients, client.Id)
+			}
+
+		} else {
+			close(client.Send)
+			delete(s.clients, client.Id)
+		}
 
 	} else {
-		err = fmt.Errorf("Client does not exist")
-		log.Println(err)
+		fmt.Println("2")
+		s.SaveMessage(message)
+
 	}
+
 	s.mutex.Unlock()
 
 	return err
+}
+
+func (s *storage) SaveMessage(message *Message) {
+	if _, ok := s.pendingMessages[message.Destiny]; !ok {
+		fmt.Println("3")
+		s.pendingMessages[message.Destiny] = make(chan *Message)
+		fmt.Println(4)
+	}
+	go func() { s.pendingMessages[message.Destiny] <- message; fmt.Println(6) }()
+	fmt.Println(5)
+
 }
 
 func (s *storage) GetClientById(clientId string) *Client {
