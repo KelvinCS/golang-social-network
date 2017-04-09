@@ -2,6 +2,7 @@ package wsserver
 
 import (
 	"fmt"
+	"log"
 	"sync"
 )
 
@@ -24,10 +25,20 @@ func (s *storage) Register(key string, client *Client) {
 	fmt.Println(s.clients)
 }
 
-func (s *storage) SendToClient(message *Message, clientId string) {
+func (s *storage) SendToClient(message *Message, clientId string) error {
+	var err error
+
 	s.mutex.Lock()
-	s.clients[clientId].Send <- message
+	if client, ok := s.clients[clientId]; ok {
+		client.Send <- message
+
+	} else {
+		err = fmt.Errorf("Client does not exist")
+		log.Println(err)
+	}
 	s.mutex.Unlock()
+
+	return err
 }
 
 func (s *storage) GetClientById(clientId string) *Client {

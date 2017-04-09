@@ -1,8 +1,6 @@
 package wsserver
 
 import (
-	"fmt"
-
 	"github.com/gorilla/websocket"
 )
 
@@ -16,10 +14,11 @@ type Client struct {
 
 func newClient(id string, socket *websocket.Conn, allClients *storage) *Client {
 	return &Client{
-		Id:       id,
-		Send:     make(chan *Message),
-		Contacts: newStorage(),
-		socket:   socket,
+		Id:         id,
+		Send:       make(chan *Message),
+		Contacts:   newStorage(),
+		allClients: allClients,
+		socket:     socket,
 	}
 }
 
@@ -37,7 +36,7 @@ func (c *Client) read() {
 			break
 		}
 
-		fmt.Println(string(msg))
+		c.allClients.SendToClient(&msg, msg.Destiny)
 	}
 
 	defer c.socket.Close()

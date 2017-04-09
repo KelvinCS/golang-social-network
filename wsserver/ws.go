@@ -1,7 +1,6 @@
 package wsserver
 
 import (
-	"fmt"
 	"log"
 
 	"github.com/gorilla/websocket"
@@ -36,13 +35,10 @@ func (w *WS) EchoHandler(c echo.Context) error {
 		return err
 	}
 
-	fmt.Println("Cliente conectado")
-	fmt.Println(c.Request().Method)
-
 	id := c.Param("id")
-	fmt.Println(id)
 	client := newClient(id, socket, w.storage)
 
+	client.Run()
 	w.storage.Register(id, client)
 
 	return err
