@@ -32,7 +32,6 @@ func (s *storage) SendToClient(message *Message, clientId string) error {
 
 	s.mutex.Lock()
 	if client, ok := s.clients[clientId]; ok {
-		fmt.Println("1")
 		if client.online {
 			select {
 
@@ -49,7 +48,6 @@ func (s *storage) SendToClient(message *Message, clientId string) error {
 		}
 
 	} else {
-		fmt.Println("2")
 		s.SaveMessage(message)
 
 	}
@@ -61,12 +59,11 @@ func (s *storage) SendToClient(message *Message, clientId string) error {
 
 func (s *storage) SaveMessage(message *Message) {
 	if _, ok := s.pendingMessages[message.Destiny]; !ok {
-		fmt.Println("3")
+
 		s.pendingMessages[message.Destiny] = make(chan *Message)
-		fmt.Println(4)
+
 	}
-	go func() { s.pendingMessages[message.Destiny] <- message; fmt.Println(6) }()
-	fmt.Println(5)
+	go func() { s.pendingMessages[message.Destiny] <- message }()
 
 }
 
